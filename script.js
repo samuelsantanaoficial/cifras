@@ -1,86 +1,90 @@
 let cifras = [];
-let currentCifraId = null;
 let currentTranspose = 0;
-let editModal, viewModal;
+let currentCifra = null; // Armazena a cifra aberta na página de visualização
+let editModalInstance = null;
 
 const notas = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const notasAlt = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
 
 window.onload = async function() {
-    editModal = new bootstrap.Modal(document.getElementById('editModal'));
-    viewModal = new bootstrap.Modal(document.getElementById('viewModal'));
-    
-    // 1. Tenta carregar do arquivo oficial (GitHub/Netlify)
+    // 1. Carrega dados
     await loadExternalCifras();
-    
-    // 2. Carrega as edições locais (LocalStorage) se houver e mescla
     loadLocalCifras();
-    
-    renderCifras();
 
-    document.getElementById('searchInput').addEventListener('input', function(e) {
-        renderCifras(e.target.value);
-    });
+    // 2. Verifica em qual página estamos
+    const path = window.location.pathname;
+    const isView = path.includes('view.html');
+
+    if (isView) {
+        // --- Lógica da Página de Visualização ---
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+        
+        if (id) {
+            loadVisualizationPage(id);
+        } else {
+            alert('Cifra não especificada!');
+            window.location.href = 'index.html';
+        }
+
+        // Configura modal de edição se existir na página
+        const modalEl = document.getElementById('editModal');
+        if(modalEl) editModalInstance = new bootstrap.Modal(modalEl);
+
+    } else {
+        // --- Lógica da Página Inicial (Home) ---
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            renderCifrasList();
+            searchInput.addEventListener('input', (e) => renderCifrasList(e.target.value));
+        }
+    }
 };
 
-// --- NOVAS FUNÇÕES DE CARREGAMENTO/SALVAMENTO ---
+// ======================================================
+// LÓGICA DE DADOS (JSON/Local)
+// ======================================================
 
 async function loadExternalCifras() {
     try {
-        // Tenta ler o arquivo cifras.json que está no servidor (Netlify)
         const response = await fetch('cifras.json');
-        if (response.ok) {
-            const externalData = await response.json();
-            // Define o JSON como a base inicial de todas as cifras
-            cifras = externalData; 
-        }
-    } catch (error) {
-        console.warn('Nenhum arquivo externo cifras.json encontrado ou erro ao carregar. Usando apenas LocalStorage.');
-    }
+        if (response.ok) cifras = await response.json();
+    } catch (e) { console.log('Sem JSON externo'); }
 }
 
 function loadLocalCifras() {
     const stored = localStorage.getItem('cifras');
     if (stored) {
         const localData = JSON.parse(stored);
-        
-        // Mescla: Prioriza o que está no LocalStorage (edições não salvas no GitHub)
-        localData.forEach(localCifra => {
-            const index = cifras.findIndex(c => c.id === localCifra.id);
-            if (index !== -1) {
-                // Atualiza a cifra do JSON com a versão editada localmente
-                cifras[index] = localCifra;
-            } else {
-                // Adiciona cifras novas criadas localmente
-                cifras.push(localCifra);
-            }
+        localData.forEach(local => {
+            const idx = cifras.findIndex(c => c.id === local.id);
+            if (idx !== -1) cifras[idx] = local;
+            else cifras.push(local);
         });
     }
 }
 
-function saveCifras() {
-    // Salva no LocalStorage para que as edições não se percam antes do backup
+function saveCifrasToLocal() {
     localStorage.setItem('cifras', JSON.stringify(cifras));
 }
 
 function downloadBackup() {
-    // Cria um "arquivo" invisível com os dados atuais
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cifras, null, 2));
-    const downloadAnchorNode = document.createElement('a');
-    
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "cifras.json"); // Nome do arquivo a ser baixado
-    document.body.appendChild(downloadAnchorNode); 
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
-    alert('Backup baixado! Substitua o arquivo cifras.json no seu GitHub com este novo arquivo.');
+    const a = document.createElement('a');
+    a.href = dataStr;
+    a.download = "cifras.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
 }
 
-// --- RESTANTE DAS FUNÇÕES (RENDERIZAÇÃO, CRUD E TRANSPOSER) ---
+// ======================================================
+// PÁGINA INICIAL: LISTAGEM
+// ======================================================
 
-function renderCifras(search = '') {
+function renderCifrasList(search = '') {
     const list = document.getElementById('cifrasList');
-    const empty = document.getElementById('emptyState');
+    if (!list) return; // Não estamos na home
 
     let filtered = cifras;
     if (search) {
@@ -92,141 +96,184 @@ function renderCifras(search = '') {
     }
 
     if (filtered.length === 0) {
-        list.innerHTML = '';
-        empty.style.display = 'block';
+        list.innerHTML = '<div class="text-center mt-5">Nenhuma cifra encontrada.</div>';
         return;
     }
 
-    empty.style.display = 'none';
-    list.innerHTML = filtered.map(cifra => `
-        <div class="cifra-card" onclick="viewCifra('${cifra.id}')">
-            <h5 class="mb-1">${cifra.musica}</h5>
-            <div class="text-muted">${cifra.artista} • Tom: ${cifra.tom}</div>
+    // AQUI MUDOU: O link agora leva para view.html
+    list.innerHTML = filtered.map(c => `
+        <div class="cifra-card" onclick="window.location.href='view.html?id=${c.id}'">
+            <h5 class="mb-1">${c.musica}</h5>
+            <div class="text-muted">${c.artista} • Tom: ${c.tom}</div>
         </div>
     `).join('');
 }
 
-function openAddModal() {
-    currentCifraId = null;
-    document.getElementById('modalTitle').textContent = 'Nova Cifra';
-    document.getElementById('artistaInput').value = '';
-    document.getElementById('musicaInput').value = '';
-    document.getElementById('tomInput').value = 'C';
-    document.getElementById('cifraInput').value = '';
-    editModal.show();
-}
+// ======================================================
+// NOVA PÁGINA: VISUALIZAÇÃO
+// ======================================================
 
-function saveCifra() {
-    const artista = document.getElementById('artistaInput').value.trim();
-    const musica = document.getElementById('musicaInput').value.trim();
-    const tom = document.getElementById('tomInput').value;
-    const conteudo = document.getElementById('cifraInput').value;
-
-    if (!artista || !musica || !conteudo) {
-        alert('Preencha todos os campos!');
+function loadVisualizationPage(id) {
+    currentCifra = cifras.find(c => c.id === id);
+    if (!currentCifra) {
+        alert('Música não encontrada.');
+        window.location.href = 'index.html';
         return;
     }
 
-    if (currentCifraId) {
-        const index = cifras.findIndex(c => c.id === currentCifraId);
-        cifras[index] = { ...cifras[index], artista, musica, tom, conteudo };
+    document.title = `${currentCifra.musica} - ${currentCifra.artista}`;
+    document.getElementById('viewTitle').textContent = currentCifra.musica;
+    document.getElementById('songName').textContent = currentCifra.musica;
+    document.getElementById('artistName').textContent = currentCifra.artista;
+    
+    // Renderiza inicialmente sem transposição (0)
+    currentTranspose = 0;
+    renderCifraContent();
+}
+
+// ======================================================
+// CORAÇÃO DO SISTEMA: TRANSPOSIÇÃO INTELIGENTE
+// ======================================================
+
+function renderCifraContent() {
+    const el = document.getElementById('cifraContent');
+    const tomDisplay = document.getElementById('currentTom');
+    if (!el || !currentCifra) return;
+
+    // Atualiza mostrador do Tom
+    const tomOriginalIdx = getNoteIndex(currentCifra.tom);
+    if (tomOriginalIdx !== -1) {
+        const novoTomIdx = (tomOriginalIdx + currentTranspose + 12) % 12;
+        tomDisplay.textContent = notas[novoTomIdx];
     } else {
-        const novaCifra = {
-            id: Date.now().toString(),
-            artista,
-            musica,
-            tom,
-            conteudo,
-            criado: new Date().toISOString()
-        };
-        cifras.unshift(novaCifra);
+        tomDisplay.textContent = currentCifra.tom; // Fallback se o tom escrito estiver "errado"
     }
 
-    saveCifras(); // Salva no LocalStorage
-    renderCifras();
-    editModal.hide();
-}
-
-function viewCifra(id) {
-    currentCifraId = id;
-    currentTranspose = 0;
-    const cifra = cifras.find(c => c.id === id);
-
-    document.getElementById('viewTitle').textContent = cifra.musica;
-    document.getElementById('viewArtist').textContent = cifra.artista;
-    document.getElementById('currentTom').textContent = cifra.tom;
-
-    renderCifraContent(cifra);
-    viewModal.show();
-}
-
-function renderCifraContent(cifra) {
-    const content = document.getElementById('cifraContent');
-    const lines = cifra.conteudo.split('\n');
+    const lines = currentCifra.conteudo.split('\n');
+    
+    // REGEX APRIMORADO:
+    // Captura: (Nota)(Sufixo opcional)(/Baixo opcional)
+    // Ex: "C#m7(b5)/G" -> G1="C#", G2="m7(b5)", G3="/G"
+    const chordRegex = /\b([A-G][#b]?)([^/\s]*)(?:\/([A-G][#b]?))?\b/g;
 
     const html = lines.map(line => {
-        // Regex para capturar acordes (inclui sustenidos/bemóis, menores 'm', sétimas '7', barras '/C', etc.)
-        const chordRegex = /\b([A-G][#b]?(?:m|maj|dim|aug|sus|add)?[0-9]?(?:\/[A-G][#b]?)?)\b/g;
-        return line.replace(chordRegex, match => {
-            const transposed = transposeChord(match, currentTranspose);
-            return `<span class="chord">${transposed}</span>`;
+        // Se a linha parece ser letra (muito longa sem acordes claros), não tente transpor excessivamente
+        // Mas a lógica padrão é substituir padrões de acorde
+        return line.replace(chordRegex, (match, root, suffix, bass) => {
+            // Verifica se é realmente um acorde válido (segurança extra)
+            if (getNoteIndex(root) === -1) return match;
+
+            // 1. Transpõe a Tônica (Root)
+            const newRoot = transposeNote(root, currentTranspose);
+            
+            // 2. Transpõe o Baixo (se existir)
+            let newBass = "";
+            if (bass && getNoteIndex(bass) !== -1) {
+                newBass = "/" + transposeNote(bass, currentTranspose);
+            }
+
+            // 3. Reconstrói: Nota + Sufixo Original + Novo Baixo
+            return `<span class="chord">${newRoot}${suffix || ''}${newBass}</span>`;
         });
     }).join('\n');
 
-    content.innerHTML = html;
+    el.innerHTML = html;
 }
 
-function transposeChord(chord, semitones) {
-    const match = chord.match(/^([A-G][#b]?)(.*)/);
-    if (!match) return chord;
-
-    let [_, note, suffix] = match;
-
-    let index = notas.indexOf(note);
-    if (index === -1) {
-        index = notasAlt.indexOf(note);
-        if (index === -1) return chord;
-    }
-
-    index = (index + semitones + 12) % 12;
-    return notas[index] + suffix;
+// Auxiliar: Pega índice da nota (0-11)
+function getNoteIndex(noteStr) {
+    let idx = notas.indexOf(noteStr);
+    if (idx === -1) idx = notasAlt.indexOf(noteStr);
+    return idx;
 }
 
-function transpose(semitones) {
-    currentTranspose += semitones;
-    const cifra = cifras.find(c => c.id === currentCifraId);
+// Auxiliar: Transpõe uma nota individual
+function transposeNote(noteStr, semitones) {
+    let idx = getNoteIndex(noteStr);
+    if (idx === -1) return noteStr; // Retorna original se não reconhecer
+    
+    let newIdx = (idx + semitones + 12) % 12;
+    return notas[newIdx];
+}
 
-    const originalIndex = notas.indexOf(cifra.tom);
-    const newIndex = (originalIndex + currentTranspose + 12) % 12;
-    document.getElementById('currentTom').textContent = notas[newIndex];
-
-    renderCifraContent(cifra);
+function transpose(val) {
+    currentTranspose += val;
+    renderCifraContent();
 }
 
 function resetTranspose() {
     currentTranspose = 0;
-    const cifra = cifras.find(c => c.id === currentCifraId);
-    document.getElementById('currentTom').textContent = cifra.tom;
-    renderCifraContent(cifra);
+    renderCifraContent();
 }
 
-function editCifra() {
-    const cifra = cifras.find(c => c.id === currentCifraId);
-    document.getElementById('modalTitle').textContent = 'Editar Cifra';
-    document.getElementById('artistaInput').value = cifra.artista;
-    document.getElementById('musicaInput').value = cifra.musica;
-    document.getElementById('tomInput').value = cifra.tom;
-    document.getElementById('cifraInput').value = cifra.conteudo;
+// ======================================================
+// ADICIONAR E EDITAR (CRUD)
+// ======================================================
 
-    viewModal.hide();
-    editModal.show();
+// Adicionar (Na Home)
+const addModalEl = document.getElementById('addModal'); // Se vc mantiver o modal de add na home
+let addModalInstance = null;
+if (addModalEl) addModalInstance = new bootstrap.Modal(addModalEl);
+
+function openAddModal() {
+    // Limpa campos...
+    document.getElementById('newArtista').value = '';
+    document.getElementById('newMusica').value = '';
+    document.getElementById('newConteudo').value = '';
+    if(addModalInstance) addModalInstance.show();
 }
 
-function deleteCifra() {
-    if (!confirm('Tem certeza que deseja excluir esta cifra?')) return;
+function saveNewCifra() {
+    const artista = document.getElementById('newArtista').value;
+    const musica = document.getElementById('newMusica').value;
+    const tom = document.getElementById('newTom').value;
+    const conteudo = document.getElementById('newConteudo').value;
 
-    cifras = cifras.filter(c => c.id !== currentCifraId);
-    saveCifras(); // Atualiza o LocalStorage
-    renderCifras();
-    viewModal.hide();
+    if(!artista || !musica) return alert('Preencha os dados');
+
+    const nova = {
+        id: Date.now().toString(),
+        artista, musica, tom, conteudo
+    };
+    cifras.unshift(nova);
+    saveCifrasToLocal();
+    renderCifrasList();
+    if(addModalInstance) addModalInstance.hide();
+}
+
+// Editar (Na página View)
+function editCurrentCifra() {
+    document.getElementById('editId').value = currentCifra.id;
+    document.getElementById('editArtista').value = currentCifra.artista;
+    document.getElementById('editMusica').value = currentCifra.musica;
+    document.getElementById('editTom').value = currentCifra.tom;
+    document.getElementById('editConteudo').value = currentCifra.conteudo;
+    editModalInstance.show();
+}
+
+function saveEdits() {
+    const id = document.getElementById('editId').value;
+    const idx = cifras.findIndex(c => c.id === id);
+    
+    if (idx !== -1) {
+        cifras[idx].artista = document.getElementById('editArtista').value;
+        cifras[idx].musica = document.getElementById('editMusica').value;
+        cifras[idx].tom = document.getElementById('editTom').value;
+        cifras[idx].conteudo = document.getElementById('editConteudo').value;
+        
+        saveCifrasToLocal();
+        
+        // Recarrega a visualização atual
+        currentCifra = cifras[idx];
+        loadVisualizationPage(id); // Re-renderiza cabeçalho e título
+        editModalInstance.hide();
+    }
+}
+
+function deleteCurrentCifra() {
+    if(confirm('Tem certeza? Isso apaga a música.')) {
+        cifras = cifras.filter(c => c.id !== currentCifra.id);
+        saveCifrasToLocal();
+        window.location.href = 'index.html';
+    }
 }

@@ -78,35 +78,33 @@ Cheia de emoção"
 		</div>
 	</div>
 
-	<div class="modal fade" id="viewModal" tabindex="-1">
+<div class="modal fade" id="addModal" tabindex="-1">
 		<div class="modal-dialog modal-lg">
 			<div class="modal-content">
 				<div class="modal-header">
-					<div>
-						<h5 class="modal-title" id="viewTitle"></h5>
-						<small class="text-muted" id="viewArtist"></small>
-					</div>
+					<h5 class="modal-title">Nova Cifra</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 				</div>
 				<div class="modal-body">
-					<div class="transpose-buttons">
-						<div class="d-flex justify-content-between align-items-center">
-							<div>
-								<strong>Tom: <span id="currentTom"></span></strong>
-							</div>
-							<div class="btn-group btn-group-sm">
-								<button class="btn btn-outline-primary" onclick="transpose(-1)">-½ Tom</button>
-								<button class="btn btn-outline-primary" onclick="transpose(1)">+½ Tom</button>
-								<button class="btn btn-outline-secondary" onclick="resetTranspose()">Reset</button>
-							</div>
-						</div>
+					<div class="mb-3">
+						<label>Artista</label>
+						<input type="text" id="newArtista" class="form-control">
 					</div>
-					<div id="cifraContent" class="cifra-view"></div>
+					<div class="mb-3">
+						<label>Música</label>
+						<input type="text" id="newMusica" class="form-control">
+					</div>
+					<div class="mb-3">
+						<label>Tom (Ex: G)</label>
+						<input type="text" id="newTom" class="form-control">
+					</div>
+					<div class="mb-3">
+						<label>Cifra</label>
+						<textarea id="newConteudo" class="form-control" rows="10"></textarea>
+					</div>
 				</div>
 				<div class="modal-footer">
-					<button class="btn btn-danger" onclick="deleteCifra()">Excluir</button>
-					<button class="btn btn-primary" onclick="editCifra()">Editar</button>
-					<button class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+					<button type="button" class="btn btn-primary" onclick="saveNewCifra()">Salvar</button>
 				</div>
 			</div>
 		</div>
