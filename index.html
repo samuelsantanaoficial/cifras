@@ -17,11 +17,12 @@
 
 	<div class="container">
 		<div class="row mb-3">
-			<div class="col-md-8">
+			<div class="col-md-6">
 				<input type="text" id="searchInput" class="form-control search-box" placeholder="🔍 Buscar músicas ou artistas...">
 			</div>
-			<div class="col-md-4">
-				<button class="btn btn-primary w-100" onclick="openAddModal()">➕ Nova Cifra</button>
+			<div class="col-md-6 d-flex gap-2 justify-content-end">
+				<button class="btn btn-outline-success" onclick="downloadBackup()">⬇️ Baixar Backup</button>
+				<button class="btn btn-primary" onclick="openAddModal()">➕ Nova Cifra</button>
 			</div>
 		</div>
 
@@ -34,7 +35,6 @@
 		</div>
 	</div>
 
-	<!-- Modal Adicionar/Editar -->
 	<div class="modal fade" id="editModal" tabindex="-1">
 		<div class="modal-dialog modal-lg">
 			<div class="modal-content">
@@ -78,7 +78,6 @@ Cheia de emoção"
 		</div>
 	</div>
 
-	<!-- Modal Visualizar -->
 	<div class="modal fade" id="viewModal" tabindex="-1">
 		<div class="modal-dialog modal-lg">
 			<div class="modal-content">
@@ -114,6 +113,6 @@ Cheia de emoção"
 	</div>
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    <script src="main.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
