@@ -1,0 +1,73 @@
+body { 
+	padding: 20px 0; 
+    background: #f5f5f5; 
+}
+
+.cifra-card { 
+    background: white; 
+    padding: 20px; 
+    margin-bottom: 15px; 
+    border-radius: 8px; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+    cursor: pointer; 
+    transition: all 0.3s; 
+}
+
+.cifra-card:hover { 
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2); 
+    transform: translateY(-2px); 
+}
+
+.cifra-view { 
+    white-space: pre-wrap; 
+    font-family: 'Courier New', monospace; 
+    font-size: 14px; 
+    line-height: 1.6; 
+}
+
+.chord { 
+    color: #d32f2f; 
+    font-weight: bold; 
+}
+
+.btn-group-sm .btn { 
+    padding: 0.25rem 0.5rem; 
+    font-size: 0.875rem; 
+}
+
+.header { 
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+    color: white; 
+    padding: 30px 0; 
+    margin-bottom: 30px; 
+    border-radius: 0 0 15px 15px; 
+}
+
+.search-box { 
+    margin-bottom: 20px; 
+}
+
+.empty-state { 
+    text-align: center; 
+    padding: 60px 20px; 
+    color: #999; }
+
+.empty-state i { 
+    font-size: 48px; 
+    margin-bottom: 20px; 
+}
+
+.modal-body textarea { 
+    font-family: 'Courier New', monospace; 
+}
+
+.transpose-buttons { 
+    position: sticky; 
+    top: 10px; 
+    background: white; 
+    padding: 10px; 
+    border-radius: 8px; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+    z-index: 100; 
+    margin-bottom: 15px; 
+}

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>🎸 Minhas Cifras</title>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+	<link href="style.css" rel="stylesheet">
+</head>
+<body>
+	<div class="header">
+		<div class="container">
+			<h1 class="mb-0">🎸 Minhas Cifras</h1>
+			<p class="mb-0">Suas músicas favoritas, sempre à mão</p>
+		</div>
+	</div>
+
+	<div class="container">
+		<div class="row mb-3">
+			<div class="col-md-8">
+				<input type="text" id="searchInput" class="form-control search-box" placeholder="🔍 Buscar músicas ou artistas...">
+			</div>
+			<div class="col-md-4">
+				<button class="btn btn-primary w-100" onclick="openAddModal()">➕ Nova Cifra</button>
+			</div>
+		</div>
+
+		<div id="cifrasList"></div>
+		
+		<div id="emptyState" class="empty-state" style="display: none;">
+			<div>🎵</div>
+			<h4>Nenhuma cifra ainda</h4>
+			<p>Clique em "Nova Cifra" para adicionar sua primeira música!</p>
+		</div>
+	</div>
+
+	<!-- Modal Adicionar/Editar -->
+	<div class="modal fade" id="editModal" tabindex="-1">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="modalTitle">Nova Cifra</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<div class="mb-3">
+						<label class="form-label">Artista</label>
+						<input type="text" id="artistaInput" class="form-control" placeholder="Nome do artista">
+					</div>
+					<div class="mb-3">
+						<label class="form-label">Música</label>
+						<input type="text" id="musicaInput" class="form-control" placeholder="Nome da música">
+					</div>
+					<div class="mb-3">
+						<label class="form-label">Tom Original</label>
+						<select id="tomInput" class="form-control">
+							<option>C</option><option>C#</option><option>D</option><option>D#</option>
+							<option>E</option><option>F</option><option>F#</option><option>G</option>
+							<option>G#</option><option>A</option><option>A#</option><option>B</option>
+						</select>
+					</div>
+					<div class="mb-3">
+						<label class="form-label">Cifra (use letras maiúsculas para acordes)</label>
+						<textarea id="cifraInput" class="form-control" rows="15" placeholder="
+Exemplo:
+C		G		 Am
+Essa é uma canção
+F		G	   C
+Cheia de emoção"
+                        ></textarea>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+					<button type="button" class="btn btn-primary" onclick="saveCifra()">Salvar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal Visualizar -->
+	<div class="modal fade" id="viewModal" tabindex="-1">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<div>
+						<h5 class="modal-title" id="viewTitle"></h5>
+						<small class="text-muted" id="viewArtist"></small>
+					</div>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<div class="transpose-buttons">
+						<div class="d-flex justify-content-between align-items-center">
+							<div>
+								<strong>Tom: <span id="currentTom"></span></strong>
+							</div>
+							<div class="btn-group btn-group-sm">
+								<button class="btn btn-outline-primary" onclick="transpose(-1)">-½ Tom</button>
+								<button class="btn btn-outline-primary" onclick="transpose(1)">+½ Tom</button>
+								<button class="btn btn-outline-secondary" onclick="resetTranspose()">Reset</button>
+							</div>
+						</div>
+					</div>
+					<div id="cifraContent" class="cifra-view"></div>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-danger" onclick="deleteCifra()">Excluir</button>
+					<button class="btn btn-primary" onclick="editCifra()">Editar</button>
+					<button class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
