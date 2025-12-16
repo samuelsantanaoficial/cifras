@@ -54,9 +54,9 @@
 					<div class="mb-3">
 						<label class="form-label">Tom Original</label>
 						<select id="tomInput" class="form-control">
-							<option>C</option><option>C#</option><option>D</option><option>D#</option>
+							<option>C</option><option>Db</option><option>D</option><option>Eb</option>
 							<option>E</option><option>F</option><option>F#</option><option>G</option>
-							<option>G#</option><option>A</option><option>A#</option><option>B</option>
+							<option>Ab</option><option>A</option><option>Bb</option><option>B</option>
 						</select>
 					</div>
 					<div class="mb-3">
@@ -78,7 +78,7 @@ Cheia de emoção"
 		</div>
 	</div>
 
-<div class="modal fade" id="addModal" tabindex="-1">
+	<div class="modal fade" id="addModal" tabindex="-1">
 		<div class="modal-dialog modal-lg">
 			<div class="modal-content">
 				<div class="modal-header">
@@ -96,7 +96,11 @@ Cheia de emoção"
 					</div>
 					<div class="mb-3">
 						<label>Tom (Ex: G)</label>
-						<input type="text" id="newTom" class="form-control">
+						<select id="newTom" class="form-control">
+							<option>C</option><option>Db</option><option>D</option><option>Eb</option>
+							<option>E</option><option>F</option><option>F#</option><option>G</option>
+							<option>Ab</option><option>A</option><option>Bb</option><option>B</option>
+						</select>
 					</div>
 					<div class="mb-3">
 						<label>Cifra</label>
@@ -110,6 +114,8 @@ Cheia de emoção"
 		</div>
 	</div>
 
+	<!-- Tonal.js - Biblioteca de Teoria Musical -->
+	<script src="https://cdn.jsdelivr.net/npm/tonal@5.0.0/browser/tonal.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
 </body>
